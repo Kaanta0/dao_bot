@@ -12,11 +12,11 @@ class QuestCog(commands.Cog):
     async def _ensure_player(self, author: discord.Member | discord.User):
         return await self.bot.players.ensure_player(author.id)
 
-    @commands.group(name="quest", invoke_without_command=True)
+    @commands.hybrid_group(name="quest", invoke_without_command=True, description="View and manage quests.")
     async def quest_group(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `!quest list`, `!quest accept <id>`, or `!quest complete <id>`.")
+        await ctx.send("Use `/quest list`, `/quest accept <id>`, or `/quest complete <id>` (commands also available with `!`).")
 
-    @quest_group.command(name="list")
+    @quest_group.command(name="list", with_app_command=True, description="List quests you can accept.")
     async def quest_list(self, ctx: commands.Context) -> None:
         player = await self._ensure_player(ctx.author)
         quests = await self.bot.quests.list_available(player.lurkr_level)
@@ -32,7 +32,7 @@ class QuestCog(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @quest_group.command(name="accept")
+    @quest_group.command(name="accept", with_app_command=True, description="Accept a quest by its ID.")
     async def quest_accept(self, ctx: commands.Context, quest_id: int) -> None:
         player = await self._ensure_player(ctx.author)
         quest = await self.bot.db.fetch_one("SELECT * FROM quests WHERE id = ?", quest_id)
@@ -45,7 +45,7 @@ class QuestCog(commands.Cog):
         await self.bot.quests.assign(player.id, quest_id)
         await ctx.send(f"Accepted quest {quest['name']}.")
 
-    @quest_group.command(name="complete")
+    @quest_group.command(name="complete", with_app_command=True, description="Complete a quest you have accepted.")
     async def quest_complete(self, ctx: commands.Context, quest_id: int) -> None:
         player = await self._ensure_player(ctx.author)
         try:
