@@ -93,6 +93,57 @@ class UsersCog(commands.Cog):
         await self.bot.players.assign_class(player, class_id)
         await ctx.send(f"You are now a {class_row['name']}!")
 
+    @commands.hybrid_command(name="commands", description="List all available bot commands.")
+    async def list_commands(self, ctx: commands.Context) -> None:
+        """Display all available commands grouped by cog."""
+        command_entries = {}
+        seen_commands = set()
+        for command in sorted(self.bot.walk_commands(), key=lambda cmd: cmd.qualified_name):
+            if command.hidden or not command.enabled:
+                continue
+            if command.qualified_name in seen_commands:
+                continue
+            seen_commands.add(command.qualified_name)
+            signature = command.qualified_name
+            if command.signature:
+                signature = f"{signature} {command.signature}"
+            description = command.description or command.help or "No description provided."
+            cog_name = command.cog_name or "General"
+            command_entries.setdefault(cog_name, []).append(f"`{signature}` - {description}")
+
+        if not command_entries:
+            await ctx.send("No commands are currently available.")
+            return
+
+        message_chunks = []
+        for cog_name in sorted(command_entries):
+            entries = "\n".join(command_entries[cog_name])
+            chunk = f"**{cog_name} Commands**\n{entries}"
+            message_chunks.append(chunk)
+
+        output = "\n\n".join(message_chunks)
+        if len(output) <= 2000:
+            await ctx.send(output)
+            return
+
+        # Fallback to sending in multiple messages if we exceed Discord's limit
+        for chunk in message_chunks:
+            if len(chunk) <= 2000:
+                await ctx.send(chunk)
+                continue
+
+            partial = ""
+            for line in chunk.split("\n"):
+                addition = line if not partial else f"\n{line}"
+                if len(partial) + len(addition) > 2000:
+                    if partial:
+                        await ctx.send(partial)
+                    partial = line
+                else:
+                    partial += addition
+            if partial:
+                await ctx.send(partial)
+
     @commands.hybrid_command(name="inventory", description="Show the items in your inventory.")
     async def inventory(self, ctx: commands.Context) -> None:
         player = await self._ensure_player(ctx.author)
