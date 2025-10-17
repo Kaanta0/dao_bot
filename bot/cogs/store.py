@@ -12,11 +12,11 @@ class StoreCog(commands.Cog):
     async def _ensure_player(self, author: discord.Member | discord.User):
         return await self.bot.players.ensure_player(author.id)
 
-    @commands.group(name="store", invoke_without_command=True)
+    @commands.hybrid_group(name="store", invoke_without_command=True, description="Browse and buy store items.")
     async def store_group(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `!store list` or `!store buy <item_id>`.")
+        await ctx.send("Use `/store list` or `/store buy <item_id>` (also available with `!`).")
 
-    @store_group.command(name="list")
+    @store_group.command(name="list", with_app_command=True, description="List all items available in the store.")
     async def store_list(self, ctx: commands.Context) -> None:
         items = await self.bot.store.list_items()
         if not items:
@@ -32,7 +32,7 @@ class StoreCog(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @store_group.command(name="buy")
+    @store_group.command(name="buy", with_app_command=True, description="Purchase an item from the store.")
     async def store_buy(self, ctx: commands.Context, item_id: int) -> None:
         player = await self._ensure_player(ctx.author)
         item = await self.bot.store.get_item(item_id)

@@ -50,6 +50,8 @@ class RPGBot(commands.Bot):
         await self.add_cog(quests_cog.QuestCog(self))
         await self.add_cog(admin_cog.AdminCog(self))
         await self.add_cog(combat_cog.CombatCog(self))
+        synced = await self.tree.sync()
+        log.info("Synced %d slash commands", len(synced))
 
     async def close(self) -> None:
         await super().close()
