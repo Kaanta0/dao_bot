@@ -23,8 +23,8 @@ Getting Started
 1. Install Python 3.10 or newer.
 2. Create and activate a virtual environment.
 3. Install dependencies with `pip install -r requirements.txt`.
-4. Export the `DISCORD_TOKEN` environment variable with your bot token.
-5. Optionally set `DATABASE_PATH`, `LURKR_API_BASE_URL`, and `LURKR_API_TOKEN` environment variables for custom storage or Lurkr integration.
+4. Copy `.env.example` to `.env` and fill in your credentials **or** export the variables manually.
+5. Ensure `DISCORD_TOKEN` is set (via `.env` or your shell). Optionally set `DATABASE_PATH`, `LURKR_API_BASE_URL`, and `LURKR_API_TOKEN` for custom storage or Lurkr integration.
 6. Launch the bot with `python -m bot.main`.
 
 Content Management
