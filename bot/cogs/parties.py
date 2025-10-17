@@ -12,11 +12,11 @@ class PartyCog(commands.Cog):
     async def _require_player(self, member: discord.Member | discord.User):
         return await self.bot.players.ensure_player(member.id)
 
-    @commands.hybrid_group(name="party", invoke_without_command=True, description="Manage your adventuring party.")
+    @commands.group(name="party", invoke_without_command=True)
     async def party_group(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/party create`, `/party join`, or `/party leave` (commands also available with `!`).")
+        await ctx.send("Use `!party create <name>`, `!party join <id>`, or `!party leave`." )
 
-    @party_group.command(name="create", with_app_command=True, description="Create a new party with the given name.")
+    @party_group.command(name="create")
     async def create_party(self, ctx: commands.Context, *, name: str) -> None:
         player = await self._require_player(ctx.author)
         record = await self.bot.db.fetch_one(
@@ -29,7 +29,7 @@ class PartyCog(commands.Cog):
         party_id = await self.bot.parties.create_party(player.id, name)
         await ctx.send(f"Created party `{name}` with ID {party_id}.")
 
-    @party_group.command(name="join", with_app_command=True, description="Join a party by its ID.")
+    @party_group.command(name="join")
     async def join_party(self, ctx: commands.Context, party_id: int) -> None:
         player = await self._require_player(ctx.author)
         if not await self.bot.db.fetch_one("SELECT id FROM parties WHERE id = ?", party_id):
@@ -38,7 +38,7 @@ class PartyCog(commands.Cog):
         await self.bot.parties.join_party(party_id, player.id)
         await ctx.send(f"Joined party {party_id}.")
 
-    @party_group.command(name="leave", with_app_command=True, description="Leave your current party.")
+    @party_group.command(name="leave")
     async def leave_party(self, ctx: commands.Context) -> None:
         player = await self._require_player(ctx.author)
         membership = await self.bot.db.fetch_one(
@@ -57,7 +57,7 @@ class PartyCog(commands.Cog):
         else:
             await ctx.send("You left the party.")
 
-    @party_group.command(name="members", with_app_command=True, description="List members of a party by ID.")
+    @party_group.command(name="members")
     async def members(self, ctx: commands.Context, party_id: int) -> None:
         rows = await self.bot.db.fetch_all(
             """
