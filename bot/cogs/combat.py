@@ -28,7 +28,7 @@ class CombatCog(commands.Cog):
                 players.append(await self.bot.players.ensure_player(row["discord_id"]))
         return players
 
-    @commands.hybrid_command(name="battle", description="Battle an enemy by ID, optionally with your party.")
+    @commands.command(name="battle")
     async def battle(self, ctx: commands.Context, enemy_id: int) -> None:
         players = await self._collect_party_players(ctx.author)
         enemy = await self.bot.combat.fetch_enemy(enemy_id)

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 
-from discord import app_commands
 from discord.ext import commands
 
 
@@ -19,38 +18,20 @@ class AdminCog(commands.Cog):
         except json.JSONDecodeError as exc:  # noqa: PERF203
             raise commands.BadArgument("Invalid JSON for modifiers.") from exc
 
-    @commands.hybrid_group(
-        name="admin",
-        invoke_without_command=True,
-        description="Administrative commands for managing RPG content.",
-    )
+    @commands.group(name="admin", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_group(self, ctx: commands.Context) -> None:
-        await ctx.send(
-            "Available subcommands: class, skill, trait, item, enemy, quest, currency."
-            " Use them via `/admin ...` or `!admin ...`."
-        )
+        await ctx.send("Available subcommands: class, skill, trait, item, enemy, quest, currency.")
 
-    @admin_group.hybrid_group(
-        name="class",
-        invoke_without_command=True,
-        description="Create and configure RPG classes.",
-    )
+    @admin_group.group(name="class", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_class(self, ctx: commands.Context) -> None:
         await ctx.send(
-            "Use `/admin class create <name> <constitution> <agility> <defense> <endurance> <dantian_size> <strength> <spirit> [description...]`."
+            "Use `!admin class create <name> <constitution> <agility> <defense> <endurance> <dantian_size> <strength> <spirit> [description...]`."
         )
 
-    @admin_class.command(
-        name="create",
-        with_app_command=True,
-        description="Create a new RPG class with stat multipliers.",
-    )
+    @admin_class.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def class_create(
         self,
         ctx: commands.Context,
@@ -78,26 +59,15 @@ class AdminCog(commands.Cog):
         )
         await ctx.send(f"Created class {name} with id {class_id}.")
 
-    @admin_group.hybrid_group(
-        name="skill",
-        invoke_without_command=True,
-        description="Manage skills available to classes.",
-    )
+    @admin_group.group(name="skill", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_skill(self, ctx: commands.Context) -> None:
         await ctx.send(
-            "Use `/admin skill create <name> <grade> <type> <cost> <damage_multiplier> [description...]`"
-            " (damage multiplier example: 1.5 for 150%)."
+            "Use `!admin skill create <name> <grade> <type> <cost> <damage_multiplier> [description...]` (damage multiplier example: 1.5 for 150%)."
         )
 
-    @admin_skill.command(
-        name="create",
-        with_app_command=True,
-        description="Create a new skill that classes can use.",
-    )
+    @admin_skill.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def skill_create(
         self,
         ctx: commands.Context,
@@ -124,56 +94,31 @@ class AdminCog(commands.Cog):
             return
         await ctx.send(f"Created skill {name} with id {skill_id}.")
 
-    @admin_skill.command(
-        name="assign",
-        with_app_command=True,
-        description="Assign a skill to a class.",
-    )
+    @admin_skill.command(name="assign")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def skill_assign(self, ctx: commands.Context, class_id: int, skill_id: int) -> None:
         await self.bot.admin.assign_skill_to_class(class_id, skill_id)
         await ctx.send(f"Assigned skill {skill_id} to class {class_id}.")
 
-    @admin_group.hybrid_group(
-        name="trait",
-        invoke_without_command=True,
-        description="Manage traits that modify player stats.",
-    )
+    @admin_group.group(name="trait", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_trait(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/admin trait create <name> <json_modifiers> [description...]`.")
+        await ctx.send("Use `!admin trait create <name> <json_modifiers> [description...]`.")
 
-    @admin_trait.command(
-        name="create",
-        with_app_command=True,
-        description="Create a new trait with stat modifiers.",
-    )
+    @admin_trait.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def trait_create(self, ctx: commands.Context, name: str, modifiers: str, *, description: str = "") -> None:
         mod_data = await self._parse_modifiers(modifiers)
         trait_id = await self.bot.admin.create_trait(name, description, mod_data)
         await ctx.send(f"Created trait {name} with id {trait_id}.")
 
-    @admin_group.hybrid_group(
-        name="item",
-        invoke_without_command=True,
-        description="Manage items available in the world and store.",
-    )
+    @admin_group.group(name="item", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_item(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/admin item create <name> <type> <price> <json_modifiers> [description...]`.")
+        await ctx.send("Use `!admin item create <name> <type> <price> <json_modifiers> [description...]`.")
 
-    @admin_item.command(
-        name="create",
-        with_app_command=True,
-        description="Create a new item.",
-    )
+    @admin_item.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def item_create(
         self,
         ctx: commands.Context,
@@ -188,23 +133,13 @@ class AdminCog(commands.Cog):
         item_id = await self.bot.admin.create_item(name, description, item_type, price, mod_data)
         await ctx.send(f"Created item {name} with id {item_id}.")
 
-    @admin_group.hybrid_group(
-        name="enemy",
-        invoke_without_command=True,
-        description="Create enemies and bosses.",
-    )
+    @admin_group.group(name="enemy", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_enemy(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/admin enemy create <name> <level> <json_stats> <json_rewards> [description...]`.")
+        await ctx.send("Use `!admin enemy create <name> <level> <json_stats> <json_rewards> [description...]`.")
 
-    @admin_enemy.command(
-        name="create",
-        with_app_command=True,
-        description="Create a standard enemy.",
-    )
+    @admin_enemy.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def enemy_create(
         self,
         ctx: commands.Context,
@@ -220,13 +155,8 @@ class AdminCog(commands.Cog):
         enemy_id = await self.bot.admin.create_enemy(name, description, level, stats_data, rewards_data, is_boss=False)
         await ctx.send(f"Created enemy {name} with id {enemy_id}.")
 
-    @admin_enemy.command(
-        name="boss",
-        with_app_command=True,
-        description="Create a boss enemy.",
-    )
+    @admin_enemy.command(name="boss")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def enemy_boss(
         self,
         ctx: commands.Context,
@@ -242,23 +172,13 @@ class AdminCog(commands.Cog):
         enemy_id = await self.bot.admin.create_enemy(name, description, level, stats_data, rewards_data, is_boss=True)
         await ctx.send(f"Created boss {name} with id {enemy_id}.")
 
-    @admin_group.hybrid_group(
-        name="quest",
-        invoke_without_command=True,
-        description="Create quests for players.",
-    )
+    @admin_group.group(name="quest", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_quest(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/admin quest create <name> <level> <json_rewards> [description...]`.")
+        await ctx.send("Use `!admin quest create <name> <level> <json_rewards> [description...]`.")
 
-    @admin_quest.command(
-        name="create",
-        with_app_command=True,
-        description="Create a new quest.",
-    )
+    @admin_quest.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def quest_create(
         self,
         ctx: commands.Context,
@@ -272,23 +192,13 @@ class AdminCog(commands.Cog):
         quest_id = await self.bot.admin.create_quest(name, description, level, reward_data)
         await ctx.send(f"Created quest {name} with id {quest_id}.")
 
-    @admin_group.hybrid_group(
-        name="currency",
-        invoke_without_command=True,
-        description="Create currencies for rewards or stores.",
-    )
+    @admin_group.group(name="currency", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def admin_currency(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/admin currency create <name> [is_premium] [description...]`.")
+        await ctx.send("Use `!admin currency create <name> [is_premium] [description...]`.")
 
-    @admin_currency.command(
-        name="create",
-        with_app_command=True,
-        description="Create a new currency.",
-    )
+    @admin_currency.command(name="create")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(administrator=True)
     async def currency_create(
         self,
         ctx: commands.Context,

@@ -14,7 +14,7 @@ class UsersCog(commands.Cog):
     async def _ensure_player(self, member: discord.Member | discord.User) -> Player:
         return await self.bot.players.ensure_player(member.id)
 
-    @commands.hybrid_command(name="profile", description="Display your RPG profile.")
+    @commands.command(name="profile")
     async def profile(self, ctx: commands.Context) -> None:
         """Display the calling user's RPG profile."""
         player = await self._ensure_player(ctx.author)
@@ -47,7 +47,7 @@ class UsersCog(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="sync", description="Sync your Lurkr level with the game data.")
+    @commands.command(name="sync")
     async def sync(self, ctx: commands.Context) -> None:
         """Force refresh of Lurkr level."""
         player = await self._ensure_player(ctx.author)
@@ -58,11 +58,11 @@ class UsersCog(commands.Cog):
         else:
             await ctx.send(f"Synced your Lurkr level to {player.lurkr_level}.")
 
-    @commands.hybrid_group(name="class", invoke_without_command=True, description="Manage your RPG class.")
+    @commands.group(name="class", invoke_without_command=True)
     async def class_group(self, ctx: commands.Context) -> None:
-        await ctx.send("Use `/class choose <class_id>` or `!class choose <class_id>` to pick a class.")
+        await ctx.send("Use `!class choose <class_id>` to pick a class.")
 
-    @class_group.command(name="list", with_app_command=True, description="List all available RPG classes.")
+    @class_group.command(name="list")
     async def list_classes(self, ctx: commands.Context) -> None:
         rows = await self.bot.db.fetch_all("SELECT * FROM classes")
         if not rows:
@@ -83,7 +83,7 @@ class UsersCog(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @class_group.command(name="choose", with_app_command=True, description="Choose an RPG class by its ID.")
+    @class_group.command(name="choose")
     async def choose_class(self, ctx: commands.Context, class_id: int) -> None:
         player = await self._ensure_player(ctx.author)
         class_row = await self.bot.db.fetch_one("SELECT * FROM classes WHERE id = ?", class_id)
@@ -93,7 +93,7 @@ class UsersCog(commands.Cog):
         await self.bot.players.assign_class(player, class_id)
         await ctx.send(f"You are now a {class_row['name']}!")
 
-    @commands.hybrid_command(name="inventory", description="Show the items in your inventory.")
+    @commands.command(name="inventory")
     async def inventory(self, ctx: commands.Context) -> None:
         player = await self._ensure_player(ctx.author)
         items = await self.bot.players.list_inventory(player)
